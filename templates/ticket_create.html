@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+        <meta charset="UTF-8">
+        <title>Create task</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+
+    <body>
+        <div class="page">
+
+            <div class="header">
+                <h1>Tasks</h1>
+                <a class="create-link" href="/task/list">
+                    List tasks
+                </a>
+            </div>
+
+            <h2>Add a task</h2>
+
+            <form id="task-form" class="task-form">
+
+                <div class="field">
+                    <label for="title">Task title (required)</label>
+                    <input id="title" name="title" required>
+                </div>
+
+                <div class="field">
+                    <label for="description">Task description</label>
+                    <textarea id="description" name="description"></textarea>
+                </div>
+
+                <div class="actions">
+                    <button type="submit">Create task</button>
+                </div>
+
+            </form>
+
+            <p id="result"></p>
+
+        </div>
+
+        <script>
+            const form = document.getElementById("task-form");
+            const result = document.getElementById("result");
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const title = form.elements.title.value;
+                const description = form.elements.description.value || null;
+
+                try {
+                    // 1. Fixed route to match backend (/task/create)
+                    const response = await fetch("/task/create", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ title, description })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Failed to create task");
+                    }
+
+                    // 2. The backend returns just the ID number
+                    const taskId = await response.json();
+
+                    // 3. Use local variables for title/description since backend only returns ID
+                    result.textContent = 
+                        `Created task #${taskId}: ${title}: ${description ?? "No description"}`;
+
+                    form.reset();
+
+                } catch (error) {
+                    result.textContent = error.message;
+                }
+            });
+        </script>
+    </body>
+
+</html>

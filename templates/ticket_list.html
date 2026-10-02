@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Tasks</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="page">
+
+            <div class="header">
+                <h1>Tasks</h1>
+                <a class="create-link" href="/task/create">
+                    Create a new task
+                </a>
+            </div>
+
+            <h2>Task details</h2>
+
+            <div class="content">
+
+                <form id="task-form" class="task-form">
+
+                    <div class="field">
+                        <label for="title">Title</label>
+                        <input id="title" name="title" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description"></textarea>
+                    </div>
+
+                    <div class="select-row">
+
+                        <div class="field">
+                            <label for="status">Status</label>
+                            <select id="status" name="status" required>
+                                <option value="">-- Select status --</option>
+                                <option value="new">New</option>
+                                <option value="in progress">In progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="priority">Priority</label>
+                            <select id="priority" name="priority" required>
+                                <option value="">-- Select priority --</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit">Update task</button>
+                        <button type="button" id="delete-button">Delete task</button>
+                    </div>
+
+                </form>
+
+
+                <div>
+                    <label for="task-list">Select a task</label>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><button type="button" data-sort="id">ID</button></th>
+                                <th><button type="button" data-sort="title">Title</button></th>
+                                <th><button type="button" data-sort="priority">Priority</button></th>
+                                <th><button type="button" data-sort="status">Status</button></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="task-list"></tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <p id="result"></p>
+
+        </div>
+
+        <script>
+            let tasks = [];
+            
+            const taskList = document.getElementById("task-list");
+            const form = document.getElementById("task-form");
+            const result = document.getElementById("result");
+
+            const titleInput = document.getElementById("title");
+            const descriptionInput = document.getElementById("description");
+            const statusSelect = document.getElementById("status");
+            const prioritySelect = document.getElementById("priority");
+
+            const deleteButton = document.getElementById("delete-button");
+            let sortColumn = "id";
+            let sortAscending = true;
+
+            async function loadTasks() {
+                const response = await fetch("/api/task/list");
+
+                taskList.innerHTML = "";
+
+                if (!response.ok) {
+                    throw new Error("Failed to load tasks");
+                }
+
+                tasks = await response.json();
+                
+                const sortedTasks = [...tasks].sort((a, b) => {
+                    if (a[sortColumn] < b[sortColumn]) {
+                        return sortAscending ? -1 : 1;
+                    }
+
+                    if (a[sortColumn] > b[sortColumn]) {
+                        return sortAscending ? 1 : -1;
+                    }
+
+                    return 0;
+                });
+                
+                sortedTasks.forEach(task => {
+                    const row = document.createElement("tr");
+
+                    const id = document.createElement("td");
+                    id.textContent = task.id;
+
+                    const title = document.createElement("td");
+                    title.textContent = task.title;
+
+                    const priority = document.createElement("td");
+                    priority.textContent = task.priority;
+
+                    const status = document.createElement("td");
+                    status.textContent = task.status;
+
+                    row.appendChild(id);
+                    row.appendChild(title);
+                    row.appendChild(priority);
+                    row.appendChild(status);
+
+                    row.addEventListener("click", () => {
+                        titleInput.value = task.title;
+                        descriptionInput.value = task.description ?? "";
+                        statusSelect.value = task.status;
+                        prioritySelect.value = task.priority;
+
+                        taskList.dataset.selectedId = task.id;
+                    });
+
+                    taskList.appendChild(row);
+                });
+
+                if (tasks.length > 0) {
+                    taskList.querySelector("tr").click();
+                }
+            }
+
+            document.querySelectorAll("[data-sort]").forEach(button => {
+                button.addEventListener("click", () => {
+                    const column = button.dataset.sort;
+
+                    if (sortColumn === column) {
+                        sortAscending = !sortAscending;
+                    } else {
+                        sortColumn = column;
+                        sortAscending = true;
+                    }
+
+                    loadTasks();
+                });
+            });
+
+            deleteButton.addEventListener("click", async () => {
+                const taskId = taskList.dataset.selectedId;
+
+                if (!taskId) {
+                    result.textContent = "Please select a task";
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/task/${taskId}`, {
+                        method: "DELETE"
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Failed to delete task");
+                    }
+
+                    result.textContent = "Task deleted successfully";
+                    delete taskList.dataset.selectedId;
+                    form.reset();
+                    await loadTasks();
+                } catch (error) {
+                    result.textContent = error.message;
+                }
+            });
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const taskId = taskList.dataset.selectedId;
+
+                if (!taskId) {
+                    result.textContent = "Please select a task";
+                    return;
+                }
+
+                const task = {
+                    title: titleInput.value,
+                    description: descriptionInput.value || null,
+                    status: statusSelect.value,
+                    priority: prioritySelect.value
+                };
+
+                try {
+                    const response = await fetch(`/task/${taskId}`, {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(task)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Failed to update task");
+                    }
+
+                    result.textContent = "Task updated successfully";
+
+                    await loadTasks();
+                    taskList.dataset.selectedId = taskId;
+
+                } catch (error) {
+                    result.textContent = error.message;
+                }
+            });
+
+            loadTasks().catch(error => {
+                result.textContent = error.message;
+            });
+        </script>
+    </body>
+</html>
+
