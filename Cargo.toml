@@ -17,3 +17,7 @@ rand = "0.10.3"
 [[bin]]
 name = "seed_tasks"
 path = "tools/seed_tasks.rs"
+
+[[bin]]
+name = "truncate_db"
+path = "tools/truncate_db.rs"

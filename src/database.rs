@@ -123,18 +123,37 @@ impl TasksDB {
     }
 }
 
-// Clean the DB after tests ──────────────────────────────────────────────────
+#[cfg(test)]
+mod tests {
+    use crate::database::*;
 
-#[sqlx::test]
-async fn truncate_tasks() -> Result<(), anyhow::Error> {
-    
-    dotenvy::dotenv().ok();
-    let database_url = std::env::var("DATABASE_URL")?;
-    let pool = TasksDB::new(&database_url).await?;    
+    // Test add_task with valid data ──────────────────────────────────────────────────
+    #[tokio::test]
+    async fn task_add() {
+        dotenvy::dotenv().ok();
+        let database_url = std::env::var("DATABASE_URL").unwrap();
+        let pool = TasksDB::new(&database_url).await.unwrap();   
+        let id = pool.add_task("title".try_into().unwrap(), None).await.unwrap();
+        assert!(id.into_inner() > 0, "Failed");
+    }
 
-    sqlx::query("TRUNCATE TABLE tasks RESTART IDENTITY")
-        .execute(&pool.database)
-        .await?;
+    // Test patch_task ──────────────────────────────────────────────────
+    #[tokio::test]
+    async fn task_patch() {
+        dotenvy::dotenv().ok();
+        let database_url = std::env::var("DATABASE_URL").unwrap();
+        let pool = TasksDB::new(&database_url).await.unwrap();   
+        let id = pool.add_task("title".try_into().unwrap(), None).await.unwrap();
+        pool.patch_task(id, "title_edit".try_into().unwrap(), None, "low".try_into().unwrap(), "new".try_into().unwrap()).await.unwrap();
+    }
 
-    Ok(())
+    // Test delete_task ──────────────────────────────────────────────────
+    #[tokio::test]
+    async fn task_delete() {
+        dotenvy::dotenv().ok();
+        let database_url = std::env::var("DATABASE_URL").unwrap();
+        let pool = TasksDB::new(&database_url).await.unwrap();   
+        let id = pool.add_task("title".try_into().unwrap(), None).await.unwrap();
+        pool.delete_task(id).await.unwrap();
+    }
 }

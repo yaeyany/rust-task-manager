@@ -205,88 +205,69 @@ impl Task {
         }
     }
 }
+
+// Tests ──────────────────────────────────────────────────
 #[cfg(test)]
 mod tests {
-
     use crate::{tasks::*};
 
-    // TaskTitle tests ───────────────────────────────────────────────
+    // TaskTitle ───────────────────────────────────────────────
     #[test]
-    fn test_task_title_valid() {
-        let title = TaskTitle::try_from("Hello").unwrap();
-        assert_eq!(title.0, "Hello");
+    fn title_valid() {
+        assert_eq!(TaskTitle::try_from("Hello").unwrap().0, "Hello");
     }
 
     #[test]
-    fn test_task_title_empty() {
-        let err = TaskTitle::try_from("").unwrap_err();
-        assert_eq!(err, TitleEmpty);
+    fn title_empty() {
+        assert_eq!(TaskTitle::try_from("").unwrap_err(), TitleEmpty);
     }
 
     #[test]
-    fn test_task_title_too_long() {
-        let long = "a".repeat(51);
-        let err = TaskTitle::try_from(long.as_str()).unwrap_err();
-        assert_eq!(err, TitleTooLong);
+    fn title_too_long() {
+        assert_eq!(TaskTitle::try_from("a".repeat(51).as_str()).unwrap_err(), TitleTooLong);
     }
 
     #[test]
-    fn test_task_title_from_string_valid() {
-        let title = TaskTitle::try_from("World".to_string()).unwrap();
-        assert_eq!(title.0, "World");
+    fn title_from_string_valid() {
+        assert_eq!(TaskTitle::try_from("World".to_string()).unwrap().0, "World");
     }
 
-    // TaskPriority tests ───────────────────────────────────────────────
+    // TaskPriority ───────────────────────────────────────────────
     #[test]
-    fn test_task_priority_valid() {
-        let p = TaskPriority::try_from("low").unwrap();
-        assert_eq!(p, TaskPriority::Low);
-
-        let p = TaskPriority::try_from("medium").unwrap();
-        assert_eq!(p, TaskPriority::Medium);
-
-        let p = TaskPriority::try_from("high").unwrap();
-        assert_eq!(p, TaskPriority::High);
+    fn priority_valid() {
+        assert_eq!(TaskPriority::try_from("low").unwrap(), TaskPriority::Low);
+        assert_eq!(TaskPriority::try_from("medium").unwrap(), TaskPriority::Medium);
+        assert_eq!(TaskPriority::try_from("high").unwrap(), TaskPriority::High);
     }
 
     #[test]
-    fn test_task_priority_invalid() {
-        let err = TaskPriority::try_from("invalid").unwrap_err();
-        assert_eq!(err, PriorityInvalid);
+    fn priority_invalid() {
+        assert_eq!(TaskPriority::try_from("invalid").unwrap_err(), PriorityInvalid);
     }
 
     #[test]
-    fn test_task_priority_from_string() {
-        let p = TaskPriority::try_from("high".to_string()).unwrap();
-        assert_eq!(p, TaskPriority::High);
+    fn priority_from_string_valid() {
+        assert_eq!(TaskPriority::try_from("high".to_string()).unwrap(), TaskPriority::High);
     }
 
-    // TaskStatus tests ──────────────────────────────────────────────────
+    // TaskStatus ──────────────────────────────────────────────────
     #[test]
-    fn test_task_status_valid() {
-        let s = TaskStatus::try_from("new").unwrap();
-        assert_eq!(s, TaskStatus::New);
-
-        let s = TaskStatus::try_from("in progress").unwrap();
-        assert_eq!(s, TaskStatus::InProgress);
-
-        let s = TaskStatus::try_from("completed").unwrap();
-        assert_eq!(s, TaskStatus::Completed);
+    fn status_valid() {
+        assert_eq!(TaskStatus::try_from("new").unwrap(), TaskStatus::New);
+        assert_eq!(TaskStatus::try_from("in progress").unwrap(), TaskStatus::InProgress);
+        assert_eq!(TaskStatus::try_from("completed").unwrap(), TaskStatus::Completed);
     }
 
     #[test]
-    fn test_task_status_invalid() {
-        let err = TaskStatus::try_from("invalid").unwrap_err();
-        assert_eq!(err, StatusInvalid);
+    fn status_invalid() {
+        assert_eq!(TaskStatus::try_from("invalid").unwrap_err(), StatusInvalid);
     }
 
     #[test]
-    fn test_task_status_from_string() {
-        let s = TaskStatus::try_from("completed".to_string()).unwrap();
-        assert_eq!(s, TaskStatus::Completed);
+    fn status_from_string_valid() {
+        assert_eq!(TaskStatus::try_from("completed".to_string()).unwrap(), TaskStatus::Completed);
     }
 }
-
 
 
 

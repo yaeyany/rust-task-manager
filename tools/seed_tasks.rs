@@ -23,7 +23,7 @@ async fn main() -> anyhow::Result<()> {
             let ticket = Ticket{title,description};
 
             client
-                .post("http://localhost:3000/ticket/create")
+                .post("http://localhost:3000/task/create")
                 .json(&ticket)
                 .send()
                 .await
