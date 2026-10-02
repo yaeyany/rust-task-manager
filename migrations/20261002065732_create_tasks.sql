@@ -1,3 +1,4 @@
+-- Add migration script here
 CREATE TABLE tasks (
 
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

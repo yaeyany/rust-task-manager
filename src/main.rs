@@ -26,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     let listener = TcpListener::bind(addr).await?;
 
-    println!("Server running on http://127.0.0.1:3000/ticket/create");
+    println!("Server running on http://127.0.0.1:3000/task/create");
 
     let server = tokio::spawn(async move {
         axum::serve(
