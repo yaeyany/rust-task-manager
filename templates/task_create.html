@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-    
     <head>
         <meta charset="UTF-8">
         <title>Create task</title>
         <link rel="stylesheet" href="/static/style.css">
     </head>
-
     <body>
         <div class="page">
 
             <div class="header">
                 <h1>Tasks</h1>
-                <a class="create-link" href="/task/list">
-                    List tasks
-                </a>
+                <div class="nav-links">
+                    <a class="create-link" href="/task/list">
+                        List tasks
+                    </a>
+                    <a class="create-link" href="/user/create">
+                        Create a new user
+                    </a>
+                    <a class="create-link" href="/user/list">
+                        List users
+                    </a>
+                </div>
             </div>
 
             <h2>Add a task</h2>
@@ -23,7 +29,7 @@
 
                 <div class="field">
                     <label for="title">Task title (required)</label>
-                    <input id="title" name="title" required>
+                    <input id="title" name="title" maxlength="50" required>
                 </div>
 
                 <div class="field">

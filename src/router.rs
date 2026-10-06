@@ -2,11 +2,10 @@ use axum::{
     Router, http::header, routing::{get, patch},
 };
 
-use crate::database::TasksDB;
-use crate::handlers::*;
+use crate::{db::AppDB, handlers::{*, task_handlers::*, user_handlers::*}};
 
 // Main router ──────────────────────────────────────────────────
-pub fn router(tasks: TasksDB) -> Router {
+pub fn router(tasks: AppDB) -> Router {
     Router::new()
         
         // Style css ──────────────────────────────────────────────────
@@ -18,9 +17,12 @@ pub fn router(tasks: TasksDB) -> Router {
         
         // Tasks nest ──────────────────────────────────────────────────
         .nest("/task", task_router())
+
+        // User nest ──────────────────────────────────────────────────
+        .nest("/user", user_router())
         
         // Api nest ──────────────────────────────────────────────────
-        .route("/api/task/list", get(handler_task_list))
+        .nest("/api", api_router())
         
         // Fallback url ──────────────────────────────────────────────────
         .fallback(get(redirect_to_home))
@@ -29,17 +31,21 @@ pub fn router(tasks: TasksDB) -> Router {
         .with_state(tasks)
 }
 
+pub fn api_router() -> Router<AppDB> {
+    Router::new()
+
+    .route("/task/list", get(handler_task_list))
+    .route("/user/list", get(handler_user_list))
+}
+
 // Tasks router ──────────────────────────────────────────────────
-pub fn task_router() -> Router<TasksDB> {
+pub fn task_router() -> Router<AppDB> {
     Router::new()
         
-        // Tasks list ──────────────────────────────────────────────────
-        .route("/list", get(|| { html_handler("templates/task_list.html")}))
-        
-        // Task creation ──────────────────────────────────────────────────
+        .route("/list", get(|| { html_handler("../templates/task_list.html")}))
         .route(
             "/create",
-            get(|| { html_handler("templates/task_create.html")})
+            get(|| { html_handler("../templates/task_create.html")})
                 .post(handler_task_create),
         )
         
@@ -47,7 +53,20 @@ pub fn task_router() -> Router<TasksDB> {
         .route("/{id}", 
             patch(handler_task_patch)
             .delete(handler_task_delete)
-
-            // Redirect on invalid url ──────────────────────────────────────────────────
             .get(redirect_to_home))
+}
+
+pub fn user_router() -> Router<AppDB> {
+    Router::new()
+       
+        .route("/list", get(|| { html_handler("../templates/user_list.html")}))
+        .route("/create",
+            get(|| { html_handler("../templates/user_create.html")})
+                .post(handler_user_create),
+        )
+        .route("/{id}", 
+            patch(handler_user_patch)
+            .delete(handler_user_delete)
+            .get(redirect_to_home)
+        )
 }

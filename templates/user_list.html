@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Users</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="page">
+
+            <div class="header">
+                <h1>Users</h1>
+                <div class="nav-links">
+                    <a class="create-link" href="/task/create">
+                        Create a new task
+                    </a>
+                    <a class="create-link" href="/task/list">
+                        List tasks
+                    </a>
+                    <a class="create-link" href="/user/create">
+                        Create a new user
+                    </a>
+                </div>
+            </div>
+
+            <h2>User details</h2>
+
+            <div class="content">
+
+                <form id="user-form" class="user-form">
+
+                    <div class="field">
+                        <label for="username">Name</label>
+                        <input id="username" username="username" maxlength="50" required>
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit">Update user</button>
+                        <button type="button" id="delete-button">Delete user</button>
+                    </div>
+
+                </form>
+
+
+                <div>
+                    <label for="user-list">Select a user</label>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><button type="button" data-sort="id">ID</button></th>
+                                <th><button type="button" data-sort="username">Name</button></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="user-list"></tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <p id="result"></p>
+
+        </div>
+
+        <script>
+            let users = [];
+            
+            const userList = document.getElementById("user-list");
+            const form = document.getElementById("user-form");
+            const result = document.getElementById("result");
+
+            const usernameInput = document.getElementById("username");
+
+            const deleteButton = document.getElementById("delete-button");
+            let sortColumn = "id";
+            let sortAscending = true;
+
+            async function loadUsers() {
+                const response = await fetch("/api/user/list");
+
+                userList.innerHTML = "";
+
+                if (!response.ok) {
+                    throw new Error("Failed to load users");
+                }
+
+                users = await response.json();
+                
+                const sortedUsers = [...users].sort((a, b) => {
+                    if (a[sortColumn] < b[sortColumn]) {
+                        return sortAscending ? -1 : 1;
+                    }
+
+                    if (a[sortColumn] > b[sortColumn]) {
+                        return sortAscending ? 1 : -1;
+                    }
+
+                    return 0;
+                });
+                
+                sortedUsers.forEach(user => {
+                    const row = document.createElement("tr");
+
+                    const id = document.createElement("td");
+                    id.textContent = user.id;
+
+                    const username = document.createElement("td");
+                    username.textContent = user.username;
+
+                    row.appendChild(id);
+                    row.appendChild(username);
+
+                    row.addEventListener("click", () => {
+                        usernameInput.value = user.username;
+
+                        userList.dataset.selectedId = user.id;
+                    });
+
+                    userList.appendChild(row);
+                });
+
+                if (users.length > 0) {
+                    userList.querySelector("tr").click();
+                }
+            }
+
+            document.querySelectorAll("[data-sort]").forEach(button => {
+                button.addEventListener("click", () => {
+                    const column = button.dataset.sort;
+
+                    if (sortColumn === column) {
+                        sortAscending = !sortAscending;
+                    } else {
+                        sortColumn = column;
+                        sortAscending = true;
+                    }
+
+                    loadUsers();
+                });
+            });
+
+            deleteButton.addEventListener("click", async () => {
+                const userId = userList.dataset.selectedId;
+
+                if (!userId) {
+                    result.textContent = "Please select a user";
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/user/${userId}`, {
+                        method: "DELETE"
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Failed to delete user");
+                    }
+
+                    result.textContent = "User deleted successfully";
+                    delete userList.dataset.selectedId;
+                    form.reset();
+                    await loadUsers();
+                } catch (error) {
+                    result.textContent = error.message;
+                }
+            });
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const userId = userList.dataset.selectedId;
+
+                if (!userId) {
+                    result.textContent = "Please select a user";
+                    return;
+                }
+
+                const user = {
+                    name: usernameInput.value,
+                };
+
+                try {
+                    const response = await fetch(`/user/${userId}`, {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(user)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Failed to update user");
+                    }
+
+                    result.textContent = "User updated successfully";
+
+                    await loadUsers();
+                    userList.dataset.selectedId = userId;
+
+                } catch (error) {
+                    result.textContent = error.message;
+                }
+            });
+
+            loadUsers().catch(error => {
+                result.textContent = error.message;
+            });
+        </script>
+    </body>
+</html>
+

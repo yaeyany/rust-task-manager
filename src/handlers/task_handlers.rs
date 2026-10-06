@@ -1,6 +1,6 @@
-use axum::{Json, extract::{Path, State}, response::{Html, Redirect}};
+use axum::{Json, extract::{Path, State}};
 use serde::Deserialize;
-use crate::{database::TasksDB, errors::AppError, tasks::{Task, TaskDescription, TaskId, TaskPriority, TaskStatus, TaskTitle}};
+use crate::{db::AppDB, errors::AppError, tasks::{Task, TaskDescription, TaskId, TaskPriority, TaskStatus, TaskTitle}};
 
 // Task create struct ──────────────────────────────────────────────────
 #[derive(Deserialize)]
@@ -51,7 +51,7 @@ fn validate_patch_request(
 
 // Creating a task ──────────────────────────────────────────────────
 pub async fn handler_task_create(
-    State(tasks): State<TasksDB>,
+    State(tasks): State<AppDB>,
     Json(request): Json<RequestTaskCreate>,
 ) -> Result<Json<TaskId>, AppError> {
     let (title, description) = validate_task_request(request)?;
@@ -63,7 +63,7 @@ pub async fn handler_task_create(
 
 // List all tasks ──────────────────────────────────────────────────
 pub async fn handler_task_list(
-    State(tasks): State<TasksDB>,
+    State(tasks): State<AppDB>,
 ) -> Result<Json<Vec<Task>>, AppError> {
     let tasks = tasks.get_tasks(100).await?;
 
@@ -72,7 +72,7 @@ pub async fn handler_task_list(
 
 // Patch a task ──────────────────────────────────────────────────
 pub async fn handler_task_patch(
-    State(tasks): State<TasksDB>,
+    State(tasks): State<AppDB>,
     Path(id): Path<i64>, 
     Json(request): Json<RequestTaskPatch>,
 ) -> Result<(), AppError> {
@@ -85,25 +85,10 @@ pub async fn handler_task_patch(
 
 // Delete a task ──────────────────────────────────────────────────
 pub async fn handler_task_delete(
-    State(tasks): State<TasksDB>,
+    State(tasks): State<AppDB>,
     Path(id): Path<i64>, 
 ) -> Result<(), AppError> {
     let task_id = id.try_into()?;
     tasks.delete_task(task_id).await?;
     Ok(())
-}
-
-// Checking for an html file ──────────────────────────────────────────────────
-pub async fn html_handler(path: &str) -> Html<String> {
-    match tokio::fs::read_to_string(path).await {
-        Ok(content) => Html(content),
-        Err(_) => Html(format!(
-            "<h1>500 Internal Server Error</h1><p>Critical error: HTML file '<strong>{}</strong>' not found on disk.</p>",
-            path
-        )),
-    }
-}
-// Redirect to home ──────────────────────────────────────────────────
-pub async fn redirect_to_home() -> Redirect {
-    Redirect::temporary("/task/create")
 }

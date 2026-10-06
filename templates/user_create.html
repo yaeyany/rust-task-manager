@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Register</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="page">
+
+            <div class="header">
+                <h1>Registration</h1>
+                <div class="nav-links">
+                    <a class="create-link" href="/task/create">
+                        Create a new task
+                    </a>
+                    <a class="create-link" href="/task/list">
+                        List tasks
+                    </a>
+                    <a class="create-link" href="/user/list">
+                        List users
+                    </a>
+                </div>
+            </div>
+
+            <h2>Add a user</h2>
+
+            <form id="user-form" class="user-form">
+
+                <div class="field">
+                    <label for="name">User name (required)</label>
+                    <input id="name" name="name" maxlength="50" required>
+                </div>
+
+                <div class="actions">
+                    <button type="submit">Create user</button>
+                </div>
+
+            </form>
+
+            <p id="result"></p>
+
+        </div>
+
+        <script>
+            const form = document.getElementById("user-form");
+            const result = document.getElementById("result");
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const name = form.elements.name.value;
+
+                try {
+                    // 1. Fixed route to match backend (/user/create)
+                    const response = await fetch("/user/create", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({name})
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Failed to create user");
+                    }
+
+                    // 2. The backend returns just the ID number
+                    const userId = await response.json();
+
+                    // 3. Use local variables for name since backend only returns ID
+                    result.textContent = 
+                        `Created user #${userId}: ${name}`;
+
+                    form.reset();
+
+                } catch (error) {
+                    result.textContent = error.message;
+                }
+            });
+        </script>
+    </body>
+
+</html>

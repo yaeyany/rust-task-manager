@@ -20,6 +20,19 @@ pub enum TaskError {
     StatusInvalid,
 }
 
+// Custom Task errors ──────────────────────────────────────────────────
+#[derive(Debug, thiserror::Error, PartialEq)]
+pub enum UserError {
+    #[error("User ID invalid. Can only be more than 0")]
+    IdInvalid,
+
+    #[error("Username cannot be empty")]
+    UsernameEmpty,
+
+    #[error("Username is too long. Max 50 characters")]
+    UsernameTooLong,
+}
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},

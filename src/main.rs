@@ -4,21 +4,22 @@
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
-use crate::database::TasksDB;
+use crate::db::AppDB;
 
 mod tasks;
-mod database;
+mod db;
 mod errors;
 mod helpers;
 mod handlers;
 mod router;
+mod users;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
 
     dotenvy::dotenv().ok();
     let database_url = std::env::var("DATABASE_URL")?;
-    let pool = TasksDB::new(&database_url).await?;    
+    let pool = AppDB::new(&database_url).await?;    
     
     // Call your router function and pass the database pool here
     let app = router::router(pool);

@@ -15,11 +15,19 @@ body {
     margin-bottom: 30px;
 }
 
+.nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; 
+    align-items: flex-end; 
+}
+
 .header h1 {
     margin: 0;
 }
 
 .create-link {
+    display: inline-block;
     padding: 12px 20px;
     background-color: #007bff;
     color: white;
@@ -37,7 +45,11 @@ body {
     align-items: flex-start;
 }
 
-.ticket-form {
+.task-form {
+    width: 400px;
+}
+
+.user-form {
     width: 400px;
 }
 
@@ -89,6 +101,12 @@ body {
     padding: 12px 24px;
     font-size: 16px;
     cursor: pointer;
+}
+
+.meta-date {
+    font-size: 13px;       
+    color: #666666;        
+    margin-top: 4px;      
 }
 
 table {
