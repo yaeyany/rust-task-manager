@@ -32,6 +32,11 @@
                     <input id="name" name="name" maxlength="50" required>
                 </div>
 
+                <div class="field"> 
+                    <label for="password">Password (required)</label> 
+                    <input id="password" name="password" type="password" minlength="8" required > 
+                </div>
+                
                 <div class="actions">
                     <button type="submit">Create user</button>
                 </div>
@@ -50,25 +55,24 @@
                 event.preventDefault();
 
                 const name = form.elements.name.value;
+                const password = form.elements.password.value;
 
                 try {
-                    // 1. Fixed route to match backend (/user/create)
+
                     const response = await fetch("/user/create", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
                         },
-                        body: JSON.stringify({name})
+                        body: JSON.stringify({name, password})
                     });
 
                     if (!response.ok) {
                         throw new Error("Failed to create user");
                     }
 
-                    // 2. The backend returns just the ID number
                     const userId = await response.json();
 
-                    // 3. Use local variables for name since backend only returns ID
                     result.textContent = 
                         `Created user #${userId}: ${name}`;
 

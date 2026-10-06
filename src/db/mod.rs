@@ -19,6 +19,7 @@ impl AppDB {
 
 }
 
+// Database modules ──────────────────────────────────────────────────
 pub mod tasks;
 pub mod users;
 
@@ -62,8 +63,18 @@ mod tests {
         dotenvy::dotenv().ok();
         let database_url = std::env::var("DATABASE_URL").unwrap();
         let pool = AppDB::new(&database_url).await.unwrap();   
-        let id = pool.add_user(format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap()).await.unwrap();
+        let id = pool.add_user(format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
         assert!(id.into_inner() > 0, "Failed");
+    }
+
+    // Test patch_user ──────────────────────────────────────────────────
+    #[tokio::test]
+    async fn user_patch() {
+        dotenvy::dotenv().ok();
+        let database_url = std::env::var("DATABASE_URL").unwrap();
+        let pool = AppDB::new(&database_url).await.unwrap();   
+        let id = pool.add_user(format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
+        pool.patch_user(id, format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
     }
 
     // Test delete_user ──────────────────────────────────────────────────
@@ -72,7 +83,7 @@ mod tests {
         dotenvy::dotenv().ok();
         let database_url = std::env::var("DATABASE_URL").unwrap();
         let pool = AppDB::new(&database_url).await.unwrap();   
-        let id = pool.add_user(format!("User_test_delete_{}", rand::random_range(1..1000)).try_into().unwrap()).await.unwrap();
+        let id = pool.add_user(format!("User_test_delete_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
         pool.delete_user(id).await.unwrap();
     }
 }

@@ -1,4 +1,4 @@
-use crate::{db::AppDB, users::{User, UserId, UserName}};
+use crate::{db::AppDB, users::*};
 
 // Users methods for the database ──────────────────────────────────────────────────
 impl AppDB {
@@ -7,14 +7,18 @@ impl AppDB {
     pub async fn add_user(
         &self,
         name: UserName,
+        password: UserPassword,
     ) -> Result<UserId, anyhow::Error> {
+        
         let name = name.into_inner();
+        let password_hash = password.into_inner();
 
         let query = sqlx::query!(
-            "INSERT INTO users (username)
-            VALUES ($1)
+            "INSERT INTO users (username, password_hash)
+            VALUES ($1, $2)
             RETURNING id",
-            name
+            name,
+            password_hash
         )
         .fetch_one(&self.database)
         .await?;
@@ -52,7 +56,8 @@ impl AppDB {
     pub async fn patch_user(
         &self,
         id: UserId,
-        name: UserName
+        name: UserName,
+        password: UserPassword
     ) -> Result<(), anyhow::Error> {
         sqlx::query!(
             r#"

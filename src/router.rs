@@ -31,6 +31,7 @@ pub fn router(tasks: AppDB) -> Router {
         .with_state(tasks)
 }
 
+// API router ──────────────────────────────────────────────────
 pub fn api_router() -> Router<AppDB> {
     Router::new()
 
@@ -42,26 +43,25 @@ pub fn api_router() -> Router<AppDB> {
 pub fn task_router() -> Router<AppDB> {
     Router::new()
         
-        .route("/list", get(|| { html_handler("../templates/task_list.html")}))
+        .route("/list", get(|| { html_handler("templates/task_list.html")}))
         .route(
             "/create",
-            get(|| { html_handler("../templates/task_create.html")})
+            get(|| { html_handler("templates/task_create.html")})
                 .post(handler_task_create),
         )
-        
-        // Task patching and deletion, with invalid url detection ──────────────────────────────────────────────────
         .route("/{id}", 
             patch(handler_task_patch)
             .delete(handler_task_delete)
             .get(redirect_to_home))
 }
 
+// User router ──────────────────────────────────────────────────
 pub fn user_router() -> Router<AppDB> {
     Router::new()
        
-        .route("/list", get(|| { html_handler("../templates/user_list.html")}))
+        .route("/list", get(|| { html_handler("templates/user_list.html")}))
         .route("/create",
-            get(|| { html_handler("../templates/user_create.html")})
+            get(|| { html_handler("templates/user_create.html")})
                 .post(handler_user_create),
         )
         .route("/{id}", 

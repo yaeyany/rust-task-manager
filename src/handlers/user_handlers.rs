@@ -1,19 +1,21 @@
 use axum::{Json, extract::{Path, State}};
 use serde::Deserialize;
-use crate::{db::AppDB, errors::AppError, users::{User, UserId, UserName}};
+use crate::{db::AppDB, errors::AppError, users::*};
 
 // User create struct ──────────────────────────────────────────────────
 #[derive(Deserialize)]
 pub struct RequestUserName {
-    name: String
+    name: String,
+    password: String
 }
 
-// User creation validation Json -> UserTitle ──────────────────────────────────────────────────
+// User creation validation Json -> Rust types ──────────────────────────────────────────────────
 fn validate_user_request(
     request: RequestUserName,
-) -> Result<UserName, anyhow::Error> {
+) -> Result<(UserName, UserPassword), anyhow::Error> {
     let name = request.name.try_into()?;
-    Ok(name)
+    let password = request.password.try_into()?;
+    Ok((name, password))
 }
 
 // Creating a user ──────────────────────────────────────────────────
@@ -21,9 +23,9 @@ pub async fn handler_user_create(
     State(users): State<AppDB>,
     Json(request): Json<RequestUserName>,
 ) -> Result<Json<UserId>, AppError> {
-    let name = validate_user_request(request)?;
+    let (name, password) = validate_user_request(request)?;
 
-    let id = users.add_user(name).await?;
+    let id = users.add_user(name, password).await?;
 
     Ok(Json(id))
 }
@@ -44,9 +46,9 @@ pub async fn handler_user_patch(
     Json(request): Json<RequestUserName>,
 ) -> Result<(), AppError> {
     let user_id = id.try_into()?;
-    let name = validate_user_request(request)?;
+    let (name, password) = validate_user_request(request)?;
 
-    tasks.patch_user(user_id, name).await?;
+    tasks.patch_user(user_id, name, password).await?;
     Ok(())
 }
 

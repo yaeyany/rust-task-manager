@@ -20,7 +20,7 @@ pub enum TaskError {
     StatusInvalid,
 }
 
-// Custom Task errors ──────────────────────────────────────────────────
+// Custom User errors ──────────────────────────────────────────────────
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum UserError {
     #[error("User ID invalid. Can only be more than 0")]
@@ -31,6 +31,12 @@ pub enum UserError {
 
     #[error("Username is too long. Max 50 characters")]
     UsernameTooLong,
+
+    #[error("Password cannot be empty")]
+    PasswordEmpty,
+
+    #[error("Password is too short. Min 8 characters")]
+    PasswordTooShort,
 }
 
 use axum::{
@@ -39,15 +45,11 @@ use axum::{
 };
 
 #[derive(Debug)]
-// 1. Create a wrapper type
 pub struct AppError(anyhow::Error);
 
-// 2. Tell Axum how to convert it into an HTTP response
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        // Log the error internally for debugging
         print!("AppError: {:?}", self.0);
-        // Return a safe generic error message to the client
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "Something went wrong on our end.",
@@ -56,7 +58,6 @@ impl IntoResponse for AppError {
     }
 }
 
-// 3. Enable using the `?` operator on any error that can convert into anyhow::Error
 impl<E> From<E> for AppError
 where
     E: Into<anyhow::Error>,
