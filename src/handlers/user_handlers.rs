@@ -41,14 +41,14 @@ pub async fn handler_user_list(
 
 // Patch a user ──────────────────────────────────────────────────
 pub async fn handler_user_patch(
-    State(tasks): State<AppDB>,
+    State(users): State<AppDB>,
     Path(id): Path<i32>, 
     Json(request): Json<RequestUserName>,
 ) -> Result<(), AppError> {
     let user_id = id.try_into()?;
     let (name, password) = validate_user_request(request)?;
 
-    tasks.patch_user(user_id, name, password).await?;
+    users.patch_user(user_id, name, password).await?;
     Ok(())
 }
 

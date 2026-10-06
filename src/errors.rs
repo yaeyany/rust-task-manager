@@ -49,12 +49,18 @@ pub struct AppError(anyhow::Error);
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        print!("AppError: {:?}", self.0);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Something went wrong on our end.",
-        )
-            .into_response()
+        let err = self.0;
+        if err.is::<TaskError>() || err.is::<UserError>() {
+            (
+                StatusCode::BAD_REQUEST,
+                format!("Validation error: {}", err),
+            ).into_response()
+        } else {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Something went wrong on our end.",
+            ).into_response()
+        }
     }
 }
 

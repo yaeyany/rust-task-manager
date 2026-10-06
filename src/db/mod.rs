@@ -27,12 +27,16 @@ pub mod users;
 mod tests {
     use crate::db::*;
 
+    async fn test_db() -> AppDB {
+        dotenvy::dotenv().ok();
+        let database_url = std::env::var("DATABASE_URL").unwrap();
+        AppDB::new(&database_url).await.unwrap()
+    }
+
     // Test add_task with valid data ──────────────────────────────────────────────────
     #[tokio::test]
     async fn task_add() {
-        dotenvy::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").unwrap();
-        let pool = AppDB::new(&database_url).await.unwrap();   
+        let pool = test_db().await;
         let id = pool.add_task("title".try_into().unwrap(), None).await.unwrap();
         assert!(id.into_inner() > 0, "Failed");
     }
@@ -40,9 +44,7 @@ mod tests {
     // Test patch_task ──────────────────────────────────────────────────
     #[tokio::test]
     async fn task_patch() {
-        dotenvy::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").unwrap();
-        let pool = AppDB::new(&database_url).await.unwrap();   
+        let pool = test_db().await;
         let id = pool.add_task("title".try_into().unwrap(), None).await.unwrap();
         pool.patch_task(id, "title_edit".try_into().unwrap(), None, "low".try_into().unwrap(), "new".try_into().unwrap()).await.unwrap();
     }
@@ -50,9 +52,7 @@ mod tests {
     // Test delete_task ──────────────────────────────────────────────────
     #[tokio::test]
     async fn task_delete() {
-        dotenvy::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").unwrap();
-        let pool = AppDB::new(&database_url).await.unwrap();   
+        let pool = test_db().await; 
         let id = pool.add_task("title".try_into().unwrap(), None).await.unwrap();
         pool.delete_task(id).await.unwrap();
     }
@@ -60,9 +60,7 @@ mod tests {
     // Test add_user with valid data ──────────────────────────────────────────────────
     #[tokio::test]
     async fn user_add() {
-        dotenvy::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").unwrap();
-        let pool = AppDB::new(&database_url).await.unwrap();   
+        let pool = test_db().await; 
         let id = pool.add_user(format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
         assert!(id.into_inner() > 0, "Failed");
     }
@@ -70,9 +68,7 @@ mod tests {
     // Test patch_user ──────────────────────────────────────────────────
     #[tokio::test]
     async fn user_patch() {
-        dotenvy::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").unwrap();
-        let pool = AppDB::new(&database_url).await.unwrap();   
+        let pool = test_db().await;  
         let id = pool.add_user(format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
         pool.patch_user(id, format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
     }
@@ -80,9 +76,7 @@ mod tests {
     // Test delete_user ──────────────────────────────────────────────────
     #[tokio::test]
     async fn user_delete() {
-        dotenvy::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL").unwrap();
-        let pool = AppDB::new(&database_url).await.unwrap();   
+        let pool = test_db().await;  
         let id = pool.add_user(format!("User_test_delete_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
         pool.delete_user(id).await.unwrap();
     }
