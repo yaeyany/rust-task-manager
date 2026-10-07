@@ -1,16 +1,6 @@
 use std::net::SocketAddr;
+use rust_task_manager::{db::AppDB, router};
 use tokio::net::TcpListener;
-
-use crate::db::AppDB;
-
-// Module declarations ──────────────────────────────────────────────────
-mod tasks;
-mod db;
-mod errors;
-mod helpers;
-mod handlers;
-mod router;
-mod users;
 
 // Main entry point ──────────────────────────────────────────────────
 #[tokio::main]
