@@ -1,3 +1,5 @@
+use argon2::{Argon2, PasswordHasher};
+
 use crate::{db::AppDB, users::*};
 
 // Users methods for the database ──────────────────────────────────────────────────
@@ -9,9 +11,9 @@ impl AppDB {
         name: UserName,
         password: UserPassword,
     ) -> Result<UserId, anyhow::Error> {
-        
+        let argon2 = Argon2::default();
         let name = name.into_inner();
-        let password_hash = password.into_inner();
+        let password_hash = argon2.hash_password(password.into_inner().as_bytes())?.to_string();
 
         let query = sqlx::query!(
             "INSERT INTO users (username, password_hash)
@@ -24,6 +26,21 @@ impl AppDB {
         .await?;
 
         Ok(UserId::try_from(query.id)?)
+    }
+
+    // Retrieve password hash for authentication ──────────────────────────────────────────────────
+    pub async fn get_user_password_hash(
+    &self,
+    username: &str,
+    ) -> Result<Option<String>, anyhow::Error> {
+        let row = sqlx::query!(
+            "SELECT password_hash FROM users WHERE username = $1",
+            username
+        )
+        .fetch_optional(&self.database)
+        .await?;
+
+        Ok(row.map(|row| row.password_hash))
     }
 
     // Retrieve users ──────────────────────────────────────────────────
@@ -53,11 +70,10 @@ impl AppDB {
     }
 
     // Patch a user ──────────────────────────────────────────────────
-    pub async fn patch_user(
+    pub async fn patch_user_name(
         &self,
         id: UserId,
         name: UserName,
-        password: UserPassword
     ) -> Result<(), anyhow::Error> {
         sqlx::query!(
             r#"

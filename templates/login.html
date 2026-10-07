@@ -2,28 +2,17 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Register</title>
+        <title>Login</title>
         <link rel="stylesheet" href="/static/style.css">
     </head>
     <body>
         <div class="page">
 
             <div class="header">
-                <h1>Registration</h1>
-                <div class="nav-links">
-                    <a class="create-link" href="/task/create">
-                        Create a new task
-                    </a>
-                    <a class="create-link" href="/task/list">
-                        List tasks
-                    </a>
-                    <a class="create-link" href="/user/list">
-                        List users
-                    </a>
-                </div>
+                <h1>Login</h1>
             </div>
 
-            <h2>Add a user</h2>
+            <h2>Enter username and password</h2>
 
             <form id="user-form" class="user-form">
 
@@ -44,7 +33,7 @@
                 </div>
                 
                 <div class="actions">
-                    <button type="submit">Create user</button>
+                    <button type="submit">Submit</button>
                 </div>
 
             </form>
@@ -52,6 +41,8 @@
             <p id="result"></p>
 
         </div>
+
+        <script src="/static/password-input.js"></script>
 
         <script src="/static/icons.js"></script>
 
@@ -68,7 +59,7 @@
 
                 try {
 
-                    const response = await fetch("/user/create", {
+                    const response = await fetch("/login", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
@@ -77,23 +68,17 @@
                     });
 
                     if (!response.ok) {
-                        throw new Error("Failed to create user");
+                        throw new Error("Failed to verify");
                     }
 
-                    const userId = await response.json();
+                    await response.json();
 
-                    result.textContent = 
-                        `Created user #${userId}: ${name}`;
-
-                    form.reset();
+                    window.location.assign("/task/create");
 
                 } catch (error) {
                     result.textContent = error.message;
                 }
             });
         </script>
-
-        <script src="/static/password-input.js"></script>
     </body>
-
 </html>

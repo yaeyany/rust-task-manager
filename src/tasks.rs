@@ -33,7 +33,7 @@ pub enum TaskPriority {
 #[serde(rename_all = "lowercase")]
 pub enum TaskStatus {
     New,
-    #[serde(rename = "in progress")] // <-- This tells Serde to output "in progress" with a space
+    #[serde(rename = "in progress")] 
     InProgress,
     Completed,
 }
@@ -128,7 +128,7 @@ impl TryFrom<&str> for TaskStatus {
         let value = sanitize_string(value);
         match value.as_str() {
             "new" => Ok(TaskStatus::New),
-            "in_progress" => Ok(TaskStatus::InProgress),
+            "in_progress" | "in progress" => Ok(TaskStatus::InProgress),
             "completed" => Ok(TaskStatus::Completed),
             _ => Err(StatusInvalid),
         }
@@ -179,7 +179,7 @@ impl TaskStatus {
     pub fn into_inner(self) -> String {
         match self {
             TaskStatus::New => "new".to_string(),
-            TaskStatus::InProgress => "in_progress".to_string(),  // Use underscore
+            TaskStatus::InProgress => "in progress".to_string(), 
             TaskStatus::Completed => "completed".to_string(),
         }
     }

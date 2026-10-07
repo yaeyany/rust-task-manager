@@ -25,6 +25,7 @@ pub mod users;
 
 #[cfg(test)]
 mod tests {
+    use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
     use crate::db::*;
 
     async fn test_db() -> AppDB {
@@ -61,16 +62,21 @@ mod tests {
     #[tokio::test]
     async fn user_add() {
         let pool = test_db().await; 
-        let id = pool.add_user(format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
+        let argon2 = Argon2::default();
+        let password = "password";
+        let password_hash = argon2.hash_password(password.as_bytes()).unwrap().to_string();
+        let id = pool.add_user(format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), password_hash.clone().try_into().unwrap()).await.unwrap();
         assert!(id.into_inner() > 0, "Failed");
+        let parsed_hash = PasswordHash::new(&password_hash).unwrap();
+        assert!(Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_ok());
     }
 
-    // Test patch_user ──────────────────────────────────────────────────
+    // Test patch_user_name ──────────────────────────────────────────────────
     #[tokio::test]
     async fn user_patch() {
         let pool = test_db().await;  
         let id = pool.add_user(format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
-        pool.patch_user(id, format!("User_test_{}", rand::random_range(1..1000)).try_into().unwrap(), "password".try_into().unwrap()).await.unwrap();
+        pool.patch_user_name(id, format!("User_test_patched{}", rand::random_range(1..1000)).try_into().unwrap()).await.unwrap();
     }
 
     // Test delete_user ──────────────────────────────────────────────────

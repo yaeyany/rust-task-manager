@@ -34,16 +34,14 @@
                         <input id="username" username="username" maxlength="50" required>
                     </div>
 
-                    <div class="field">
-                        <label for="password">Password</label>
-                        <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required>
-                    </div>
-
                     <div class="actions">
-                        <button type="submit">Update user</button>
+                        <button type="submit">Update user name</button>
                         <button type="button" id="delete-button">Delete user</button>
                     </div>
 
+                    <div class="actions">
+                        <button type="button" id="password-button">Change password</button>
+                    </div>
                 </form>
 
 
@@ -76,9 +74,9 @@
             const result = document.getElementById("result");
 
             const usernameInput = document.getElementById("username");
-            const passwordInput = document.getElementById("password");
 
             const deleteButton = document.getElementById("delete-button");
+            const passwordButton = document.getElementById("password-button");
             let sortColumn = "id";
             let sortAscending = true;
 
@@ -184,7 +182,6 @@
 
                 const user = {
                     name: usernameInput.value,
-                    password: passwordInput.value,
                 };
 
                 try {
@@ -201,7 +198,6 @@
                     }
 
                     result.textContent = "User updated successfully";
-                    passwordInput.value = "";
 
                     await loadUsers();
                     userList.dataset.selectedId = userId;
@@ -214,7 +210,19 @@
             loadUsers().catch(error => {
                 result.textContent = error.message;
             });
+
+            passwordButton.addEventListener("click", async () => {
+                const userId = userList.dataset.selectedId;
+
+                if (!userId) {
+                    result.textContent = "Please select a user";
+                    return;
+                }
+
+                // Password-change UI/implementation goes here.
+            });
         </script>
+        <script src="/static/password-input.js"></script>
     </body>
 </html>
 

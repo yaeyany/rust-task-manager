@@ -14,7 +14,19 @@ pub fn router(tasks: AppDB) -> Router {
             [(header::CONTENT_TYPE, "text/css")],
             include_str!("../static/style.css"),
         )}))
-        
+       .route("/static/password-input.js", get(|| async {
+            (
+                [(header::CONTENT_TYPE, "application/javascript")],
+                include_str!("../static/password-input.js"),
+            )
+        }))
+
+        // Home page ──────────────────────────────────────────────────
+        .route("/login", 
+            get(|| html_handler("templates/login.html"))
+            .post(handler_login),
+        )   
+
         // Tasks nest ──────────────────────────────────────────────────
         .nest("/task", task_router())
 
@@ -25,7 +37,7 @@ pub fn router(tasks: AppDB) -> Router {
         .nest("/api", api_router())
         
         // Fallback url ──────────────────────────────────────────────────
-        .fallback(get(redirect_to_home))
+        .fallback(get(redirect_to_login))
         
         // State ──────────────────────────────────────────────────
         .with_state(tasks)
@@ -52,7 +64,7 @@ pub fn task_router() -> Router<AppDB> {
         .route("/{id}", 
             patch(handler_task_patch)
             .delete(handler_task_delete)
-            .get(redirect_to_home))
+            .get(redirect_to_login))
 }
 
 // User router ──────────────────────────────────────────────────
@@ -65,8 +77,8 @@ pub fn user_router() -> Router<AppDB> {
                 .post(handler_user_create),
         )
         .route("/{id}", 
-            patch(handler_user_patch)
+            patch(handler_user_name_patch)
             .delete(handler_user_delete)
-            .get(redirect_to_home)
+            .get(redirect_to_login)
         )
 }

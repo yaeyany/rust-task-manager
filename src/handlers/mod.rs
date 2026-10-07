@@ -14,7 +14,7 @@ pub async fn html_handler(path: &str) -> Html<String> {
         )),
     }
 }
-// Redirect to home ──────────────────────────────────────────────────
-pub async fn redirect_to_home() -> Redirect {
-    Redirect::temporary("/task/create")
+// Redirect to login screen ──────────────────────────────────────────────────
+pub async fn redirect_to_login() -> Redirect {
+    Redirect::temporary("/login")
 }

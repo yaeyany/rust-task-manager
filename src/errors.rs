@@ -1,3 +1,5 @@
+use axum::{http::StatusCode, response::{IntoResponse, Response}};
+
 // Custom Task errors ──────────────────────────────────────────────────
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum TaskError {
@@ -37,13 +39,12 @@ pub enum UserError {
 
     #[error("Password is too short. Min 8 characters")]
     PasswordTooShort,
+
+    #[error("Invalid credentials")]
+    InvalidUsername,
 }
 
-use axum::{
-    http::StatusCode,
-    response::{IntoResponse, Response},
-};
-
+// Custom app error ──────────────────────────────────────────────────
 #[derive(Debug)]
 pub struct AppError(anyhow::Error);
 
